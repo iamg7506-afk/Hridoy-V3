@@ -1,0 +1,326 @@
+{
+  "facebookAccount": {
+    "email": "",
+    "password": "",
+    "2FASecret": "",
+    "i_user": "",
+    "proxy": null,
+    "userAgent": "",
+    "intervalGetNewCookie": 1440,
+    "notes": "Cookies come from account.txt (read-only for the bot). userAgent: leave empty to use the FCA's own Chrome fingerprint, or paste the exact User-Agent of the browser your cookies were exported from. allowPasswordLogin stays false: a password login creates a second session.",
+    "allowPasswordLogin": false
+  },
+  "antiInbox": false,
+  "e2ee": {
+    "enable": false,
+    "memoryOnly": false,
+    "autoReconnect": true,
+    "logLevel": "none",
+    "devicePath": "./data/e2ee-device.json",
+    "notes": "Off by default: the FCA's E2EE engine needs optional packages (fca-unofficial from GitHub, @noble/curves, @noble/hashes ...) that are not installed on most hosts, and it registers an extra device on your account. Set enable=true only after installing them.",
+    "saveType": "path"
+  },
+  "enableTypingIndicator": true,
+  "typingDuration": 2500,
+  "reactionDebug": false,
+  "language": "en",
+  "notesLanguage": "change language using ISO 639-1 code",
+  "nickNameBot": "✦ 𝙏𝙊𝙍𝙐 𝘾𝙃𝘼𝙉 ✦",
+  "prefix": ".",
+  "adminOnly": {
+    "enable": false,
+    "ignoreCommand": []
+  },
+  "adminBot": [
+    "100067155687291",
+    "61595715143202"
+  ],
+  "cooldownBypassAdmin": true,
+  "maintenanceMode": {
+    "enable": false,
+    "allowAdminBot": true,
+    "message": "🛠️ বট বর্তমানে মেইনটেন্যান্সে আছে, একটু পরে চেষ্টা করো।"
+  },
+  "antiSpam": {
+    "enable": true,
+    "maxMessages": 8,
+    "timeFrameSeconds": 10,
+    "muteSeconds": 20,
+    "ignoreAdmin": true,
+    "notifyOnMute": true,
+    "notes": "timeFrameSeconds সময়ের মধ্যে maxMessages এর বেশি মেসেজ পাঠালে muteSeconds সময়ের জন্য ইউজারের মেসেজ প্রসেস করা বন্ধ থাকবে (flood protection)."
+  },
+  "commandPerformance": {
+    "enable": true,
+    "slowCommandThresholdMs": 4000,
+    "notes": "কোনো command চালাতে এর বেশি সময় লাগলে logs/performance.log এ লেখা হবে।"
+  },
+  "noPrefix": {
+    "enable": true,
+    "notes": "mode: off=prefix required for all | admin=only bot admins skip prefix | all=everyone skips prefix",
+    "mode": "admin"
+  },
+  "reactUnsend": {
+    "enable": true,
+    "onlyAdmin": true,
+    "emojis": [
+      "😡",
+      "🤬"
+    ],
+    "notes": "If enable = true, bot will unsend any message reacted with these emojis. If onlyAdmin = true, only adminBot IDs can trigger it."
+  },
+  "whiteListMode": {
+    "enable": false,
+    "whiteListIds": [
+      "100067155687291",
+     "61595715143202"
+    ],
+    "notes": "If enabled, only IDs in whiteListIds can use the bot."
+  },
+  "whiteListModeThread": {
+    "enable": false,
+    "whiteListThreadIds": [],
+    "notes": "If enabled, only threads in whiteListThreadIds can use the bot."
+  },
+  "database": {
+    "type": "mongodb",
+    "uriMongodb": "mongodb+srv://hridoyhossen049_db_user:Whitedavil2198579335hridoy69@hridoyhossen48360.i6c7oec.mongodb.net/?appName=hridoyhossen48360",
+    "autoSyncWhenStart": false,
+    "autoRefreshThreadInfoFirstTime": true,
+    "notes": "Recommended using 'mongodb' or 'sqlite'."
+  },
+  "security": {
+    "exposeErrorDetailsInChat": false,
+    "_notes": "If true, command error stack traces are sent into the chat/group where the error happened (useful for a private dev bot). Keep false for any bot used by others - full details are always still written to logs/error.log regardless of this setting."
+  },
+  "timeZone": "Asia/Dhaka",
+  "credentials": {
+    "gmailAccount": {
+      "email": "botofnexxo@gmail.com",
+      "clientId": "848792512039-g3mlfd39p9ttu82ga4kahk6kadjr0hcp.apps.googleusercontent.com",
+      "clientSecret": "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",
+      "refreshToken": " ",
+      "apiKey": ""
+    },
+    "gRecaptcha": {
+      "siteKey": "6LfU0TUrAAAAAJVy_tm-q9xlEIEeyBK4N8VwuGdZ",
+      "secretKey": "6LfU0TUrAAAAAOR_CE7oZV-8Eo83LsJmb12-lWFb"
+    }
+  },
+  "dashBoard": {
+    "enable": true,
+    "expireVerifyCode": 300000,
+    "port": 12001
+  },
+  "serverUptime": {
+    "enable": false,
+    "port": 3001,
+    "socket": {
+      "enable": true,
+      "channelName": "uptime",
+      "verifyToken": ""
+    }
+  },
+  "autoRestart": {
+    "time": null,
+    "notes": "null = no scheduled restart. Example: 3600000 (1hr) or 0 4 * * * (daily 4 AM)."
+  },
+  "twoIdMode": {
+    "enable": false,
+    "secondaryAccountPath": "account2.txt",
+    "switchAfterFailedAttempts": 2,
+    "notes": "Set enable to true and paste a second Facebook account's cookies into account2.txt to turn this on. If the primary account (account.txt) fails to log in / gets logged out this many times in a row, the bot automatically swaps in the account2.txt cookies and keeps running instead of staying offline."
+  },
+  "autoUptime": {
+    "enable": false,
+    "timeInterval": 180,
+    "url": "",
+    "notes": "Time in seconds. Recommended for uptime monitors."
+  },
+  "autoLoadScripts": {
+    "enable": false,
+    "ignoreCmds": "",
+    "ignoreEvents": "",
+    "notes": "Automatically reloads scripts if edited."
+  },
+  "autoRefreshFbstate": true,
+  "autoReloginWhenChangeAccount": false,
+  "autoRestartWhenListenMqttError": true,
+  "restartListenMqtt": {
+    "enable": true,
+    "timeRestart": 2700000,
+    "delayAfterStopListening": 5000,
+    "logNoti": true,
+    "notes": "Listener refresh every ~15 min (+-15% jitter). Facebook reaction deltas were observed to go silent after ~20-25 min on one MQTT session with the previous FCA. If reactions stay reliable for days with @eryxenx/fca you can raise timeRestart (e.g. 3600000) or set enable=false to reduce reconnects."
+  },
+  "notiWhenListenMqttError": {
+    "notes": "Notification settings when MQTT stops listening.",
+    "gmail": {
+      "enable": false,
+      "emailGetNoti": ""
+    },
+    "telegram": {
+      "enable": false,
+      "botToken": "",
+      "chatId": ""
+    },
+    "discordHook": {
+      "enable": false,
+      "webhookUrl": ""
+    }
+  },
+  "hideNotiMessage": {
+    "commandNotFound": false,
+    "prefixOnly": false,
+    "adminOnly": false,
+    "threadBanned": false,
+    "userBanned": false,
+    "needRoleToUseCmd": false,
+    "needRoleToUseCmdOnReply": false,
+    "needRoleToUseCmdOnReaction": false
+  },
+  "logEvents": {
+    "groupLogDebug": false,
+    "disableAll": false,
+    "message": false,
+    "message_reaction": false,
+    "message_unsend": false,
+    "message_reply": false,
+    "event": false,
+    "read_receipt": false,
+    "typ": false,
+    "presence": false
+  },
+  "optionsFca": {
+    "forceLogin": false,
+    "listenEvents": true,
+    "updatePresence": false,
+    "listenTyping": false,
+    "logLevel": "error",
+    "selfListen": false,
+    "selfListenEvent": true,
+    "autoMarkDelivery": false,
+    "autoReconnect": true,
+    "enableE2EE": false,
+    "reactionDebug": false,
+    "notes": "Docs: https://github.com/ntkhang03/fb-chat-api/blob/master/DOCS.md#apisetoptionsoptions | Set reactionDebug to true temporarily to log the full message_reaction pipeline (raw event, dispatch, Map lookup, handler result) if reactions ever stop firing again.",
+    "autoMarkRead": false,
+    "_fixNote": "Only keys @eryxenx/fca knows are forwarded (see bot/login/fcaOptions.js). logLevel / enableE2EE / reactionDebug / autoMarkDelivery stay here for other bot code but are not sent to the FCA."
+  },
+  "fca": {
+    "sessionGuard": {
+      "enabled": true,
+      "intervalMs": 900000,
+      "debounceMs": 300000
+    },
+    "allowFacebookLogout": false,
+    "reassertActiveStatusOnBoot": false,
+    "_note": "@eryxenx/fca 1.1.7 (from npm). sessionGuard saves a copy of the live cookie jar to data/session/appstate.live.json (account.txt is never overwritten). allowFacebookLogout=false turns api.logout() into a local stop so the bot cannot end your browser session."
+  },
+  "contentGate": {
+    "nsfw": {
+      "mode": "admin",
+      "extraCommands": [],
+      "notes": "mode: off = nobody | admin = only adminBot IDs (default) | all = everyone. A command is NSFW when its category is 'nsfw' or its name is in extraCommands."
+    }
+  },
+  "http": {
+    "timeoutMs": 60000,
+    "retries": 1,
+    "apiBaseUrl": "",
+    "rewriteFrom": "https://hridoy-api.vercel.app",
+    "notes": "timeoutMs = default axios timeout. retries = automatic retries for GET on network/5xx errors. apiBaseUrl: if set, every request to rewriteFrom is sent to this base instead (e.g. your own gateway)."
+  },
+  "notesTypingIndicator": "true = show 'is typing...' before every reply (more human-like, adds visible delay) | false = reply instantly, no typing shown",
+  "humanBehavior": {
+    "markAsRead": false,
+    "markAsDelivered": false,
+    "notes": "Real Messenger clients always send read/delivered receipts. markAsRead respects the old autoseen on/off command. Set both to false for a fully passive bot."
+  },
+  "autoBackup": {
+    "enable": true,
+    "cron": "0 */6 * * *",
+    "keepLocal": 10,
+    "redactSecrets": true,
+    "includeDatabase": true,
+    "includeConfig": true,
+    "includeScriptData": true,
+    "destinations": {
+      "local": {
+        "enable": true,
+        "dir": "data/backups"
+      },
+      "mongo": {
+        "enable": false,
+        "collection": "toru_backups",
+        "keep": 5
+      },
+      "telegram": {
+        "enable": false,
+        "botToken": "",
+        "chatId": ""
+      },
+      "drive": {
+        "enable": false,
+        "folderId": "",
+        "refreshToken": "",
+        "keep": 5
+      }
+    },
+    "notes": "Zip of database (+sqlite file / mongo export), config.json and cmd data. redactSecrets=true blanks passwords/tokens/URIs inside the config copy so remote backups never carry them; restore keeps your local secrets. account*.txt cookies are NEVER backed up. Drive needs a refresh token created with the drive.file scope (the Gmail one will not work)."
+  },
+  "groupSettings": {
+    "enable": true,
+    "allowGroupAdmins": true,
+    "notes": "Per-group prefix / language / command on-off through the `gset` command. Group admins can change their own group when allowGroupAdmins=true."
+  },
+  "rateLimit": {
+    "enable": true,
+    "default": {
+      "maxUses": 12,
+      "perSeconds": 60
+    },
+    "perCommand": {
+      "ai": {
+        "maxUses": 5,
+        "perSeconds": 60
+      },
+      "gpt": {
+        "maxUses": 5,
+        "perSeconds": 60
+      }
+    },
+    "ignoreAdmin": true,
+    "notify": true,
+    "notes": "Sliding-window limit per user per command, on top of each command's own countDown cooldown. Edit live with the `ratelimit` command."
+  },
+  "reminders": {
+    "enable": true,
+    "maxPerUser": 20,
+    "checkIntervalSeconds": 20,
+    "notes": "`remind kal 9tay assignment dite hobe`, `remind 10 minute pore chai khabo`, `remind 25/12 8:30pm birthday`. Stored in data/reminders.json and survive restarts."
+  },
+  "hotReload": {
+    "enable": true,
+    "debounceMs": 800,
+    "notes": "Watches scripts/cmds and scripts/events. Add, edit or delete a file and the command is loaded/reloaded/unloaded with no restart. A file with a syntax error is skipped and the old version keeps running."
+  },
+  "bridge": {
+    "telegram": {
+      "enable": false,
+      "botToken": "",
+      "adminChatIds": [],
+      "pollTimeoutSeconds": 25,
+      "forwardAlerts": true
+    },
+    "discord": {
+      "enable": false,
+      "botToken": "",
+      "channelId": "",
+      "adminUserIds": [],
+      "webhookUrl": "",
+      "pollIntervalSeconds": 6
+    },
+    "notes": "Control the bot from Telegram/Discord: /status /threads /say /maintenance /reload /backup /restart /ratelimit. Only adminChatIds / adminUserIds can use it; everyone else is ignored silently."
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+logs/
+*.log
+# ---- secrets: never commit ----
+account.txt
+account2.txt
+account.dev.txt
+config.dev.json
+configCommands.dev.json
+.env
+data/
+fb_dtsg_data.json

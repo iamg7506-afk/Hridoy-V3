@@ -1,0 +1,299 @@
+/**
+ * @author NTKhang
+ * ! The source code is written by NTKhang, please don't change the author's name everywhere. Thank you for using
+ * ! Official source code: https://github.com/ntkhang03/Goat-Bot-V2
+ * ! If you do not download the source code from the above address, you are using an unknown version and at risk of having your account hacked
+ *
+ * English:
+ * ! Please do not change the below code, it is very important for the project.
+ * It is my motivation to maintain and develop the project for free.
+ * ! If you change it, you will be banned forever
+ * Thank you for using
+ *
+ * Vietnamese:
+ * ! Vui lòng không thay đổi mã bên dưới, nó rất quan trọng đối với dự án.
+ * Nó là động lực để tôi duy trì và phát triển dự án miễn phí.
+ * ! Nếu thay đổi nó, bạn sẽ bị cấm vĩnh viễn
+ * Cảm ơn bạn đã sử dụng
+ */
+
+// Polyfill: hridoy-fca's E2EE bridge (lib/index.mjs) needs the global
+// ReadableStream/WritableStream/TransformStream Web Streams API. Some Node 18
+// builds don't expose these as globals, which was crashing E2EE with
+// "ReadableStream is not defined". Node's own stream/web module has them.
+if (typeof globalThis.ReadableStream === "undefined") {
+	try {
+		const webStreams = require("stream/web");
+		globalThis.ReadableStream = webStreams.ReadableStream;
+		globalThis.WritableStream = webStreams.WritableStream;
+		globalThis.TransformStream = webStreams.TransformStream;
+	} catch (e) { /* ignore, Node version doesn't have stream/web either */ }
+}
+
+process.on('unhandledRejection', error => {
+	console.log(error);
+	try { require('./logger/log.js').err("UNHANDLED REJECTION", error); } catch (e) { /* ignore */ }
+});
+process.on('uncaughtException', error => {
+	console.log(error);
+	try { require('./logger/log.js').err("UNCAUGHT EXCEPTION", error); } catch (e) { /* ignore */ }
+});
+
+const axios = require("axios");
+const fs = require("fs-extra");
+const nodemailer = require("nodemailer");
+const { execSync } = require('child_process');
+const log = require('./logger/log.js');
+const path = require("path");
+
+process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0; // Disable warning: "Warning: a promise was created in a handler but was not returned from it"
+
+function validJSON(pathDir) {
+	// Fast in-process check (was: execSync("npx jsonlint ...") per file = slow start, and npx may try to download).
+	if (!fs.existsSync(pathDir))
+		throw new Error(`File "${pathDir}" not found`);
+	const text = fs.readFileSync(pathDir, "utf8").replace(/^\uFEFF/, "");
+	try {
+		JSON.parse(text);
+		return true;
+	}
+	catch (err) {
+		let msg = err.message;
+		const m = /position (\d+)/.exec(msg);
+		if (m) {
+			const pos = Number(m[1]);
+			const before = text.slice(0, pos).split("\n");
+			msg += ` (line ${before.length}, column ${before[before.length - 1].length + 1})`;
+		}
+		throw new Error(msg);
+	}
+}
+
+const { NODE_ENV } = process.env;
+let dirConfig = path.normalize(`${__dirname}/config${['production', 'development'].includes(NODE_ENV) ? '.dev.json' : '.json'}`);
+let dirConfigCommands = path.normalize(`${__dirname}/configCommands${['production', 'development'].includes(NODE_ENV) ? '.dev.json' : '.json'}`);
+let dirAccount = path.normalize(`${__dirname}/account${['production', 'development'].includes(NODE_ENV) ? '.dev.txt' : '.txt'}`);
+// v3: if NODE_ENV is production/development but the *.dev file doesn't exist, use the normal file
+// (prevents 'Invalid JSON file /config.dev.json' crash on hosts that set NODE_ENV=production)
+const _useDev = f => fs.existsSync(f);
+if (!fs.existsSync(dirConfig)) dirConfig = path.normalize(`${__dirname}/config.json`);
+if (!fs.existsSync(dirConfigCommands)) dirConfigCommands = path.normalize(`${__dirname}/configCommands.json`);
+if (!fs.existsSync(dirAccount)) dirAccount = path.normalize(`${__dirname}/account.txt`);
+
+
+for (const pathDir of [dirConfig, dirConfigCommands]) {
+	try {
+		validJSON(pathDir);
+	}
+	catch (err) {
+		log.error("CONFIG", `Invalid JSON file "${pathDir.replace(__dirname, "")}":\n${err.message.split("\n").map(line => `  ${line}`).join("\n")}\nPlease fix it and restart bot`);
+		process.exit(0);
+	}
+}
+const config = require(dirConfig);
+if (config.whiteListMode?.whiteListIds && Array.isArray(config.whiteListMode.whiteListIds))
+	config.whiteListMode.whiteListIds = config.whiteListMode.whiteListIds.map(id => id.toString());
+const configCommands = require(dirConfigCommands);
+try { require("./utils/httpDefaults.js")(config); } catch (e) { log.warn("HTTP", "httpDefaults not installed: " + e.message); }
+
+// ═══════════ Config validation (new) ═══════════
+// The JSON-syntax check above only catches malformed JSON. It doesn't
+// catch a config.json that parses fine but is missing something the bot
+// actually needs to run (audit requirement #18). This runs a fast set of
+// semantic checks and prints clear warnings/errors - it does not delete or
+// modify anything in config.json.
+function validateConfigSemantics(config) {
+	const problems = []; // hard errors - bot likely can't run correctly
+	const warnings = []; // non-fatal but worth the operator's attention
+
+	if (!config.prefix)
+		problems.push('"prefix" is missing or empty - commands won\'t be recognized without it.');
+
+	if (!Array.isArray(config.adminBot) || config.adminBot.length === 0)
+		warnings.push('"adminBot" is empty - nobody will have bot-owner permission (role 2). Admin-only commands (restart, eval, ban, etc.) will be unusable by anyone.');
+
+	const dbType = config.database?.type;
+	if (!["json", "mongodb", "sqlite"].includes(dbType))
+		problems.push(`"database.type" is "${dbType}" - must be one of "json", "mongodb", "sqlite".`);
+	else if (dbType === "mongodb" && !config.database.uriMongodb && !process.env.MONGODB_URI)
+		problems.push('"database.type" is "mongodb" but no connection string is set (database.uriMongodb or MONGODB_URI env var).');
+
+	if (config.e2ee?.enable && !config.e2ee.memoryOnly && !config.e2ee.devicePath)
+		warnings.push('"e2ee.enable" is true with memoryOnly=false but "e2ee.devicePath" is empty - E2EE session keys won\'t persist across restarts.');
+
+	// Heuristic-only: flag secrets that look like they're sitting in config.json
+	// in plain text (a real leaked value, not a placeholder). This does not
+	// print the values themselves.
+	const looksLikeRealSecret = (v) => typeof v === "string" && v.trim().length > 8 && !/^(\s*|your[-_]?|xxx+|change[-_]?me|example|placeholder|null|none)$/i.test(v.trim());
+	if (looksLikeRealSecret(config.database?.uriMongodb) && !process.env.MONGODB_URI)
+		warnings.push('A MongoDB connection string (with credentials) appears to be stored directly in config.json. If this file is ever shared, committed to git, or re-uploaded anywhere, rotate that database password immediately. Prefer setting MONGODB_URI as an environment variable instead.');
+	if (looksLikeRealSecret(config.credentials?.gmailAccount?.clientSecret))
+		warnings.push('A Google OAuth client secret appears to be stored directly in config.json (credentials.gmailAccount.clientSecret). If this file is ever shared, rotate it in Google Cloud Console.');
+
+	if (problems.length) {
+		log.error("CONFIG", `Config validation found ${problems.length} problem(s) that will likely break the bot:\n${problems.map(p => `  ✖ ${p}`).join("\n")}\nPlease fix config.json and restart.`);
+		process.exit(0);
+	}
+	if (warnings.length) {
+		log.warn("CONFIG", `Config validation warnings (bot will still start):\n${warnings.map(w => `  ⚠ ${w}`).join("\n")}`);
+	}
+}
+validateConfigSemantics(config);
+
+global.GoatBot = {
+	startTime: Date.now() - process.uptime() * 1000, // time start bot (ms)
+	commands: new Map(), // store all commands
+	eventCommands: new Map(), // store all event commands
+	commandFilesPath: [], // [{ filePath: "", commandName: [] }
+	eventCommandsFilesPath: [], // [{ filePath: "", commandName: [] }
+	aliases: new Map(), // store all aliases
+	onFirstChat: [], // store all onFirstChat [{ commandName: "", threadIDsChattedFirstTime: [] }}]
+	onChat: [], // store all onChat
+	onEvent: [], // store all onEvent
+	onReply: new Map(), // store all onReply
+	// ReactionRegistry: TTL-based Map (24h auto-expire) — prevents memory leak
+	// and ensures reaction handlers get cleaned up even if a command errors out.
+	onReaction: (() => { try { const RR = require('./utils/reactionRegistry'); const r = new RR(); r.startAutoSweep(15 * 60 * 1000); return r; } catch(_) { return new Map(); } })(), // store all onReaction
+	onAnyEvent: [], // store all onAnyEvent
+	config, // store config
+	configCommands, // store config commands
+	envCommands: {}, // store env commands
+	envEvents: {}, // store env events
+	envGlobal: {}, // store env global
+	reLoginBot: function () { }, // function relogin bot, will be set in bot/login/login.js
+	Listening: null, // store current listening handle
+	oldListening: [], // store old listening handle
+	callbackListenTime: {}, // store callback listen 
+	storage5Message: [], // store 5 message to check listening loop
+	fcaApi: null, // store fca api
+	botID: null // store bot id
+};
+
+global.db = {
+	// all data
+	allThreadData: [],
+	allUserData: [],
+	allDashBoardData: [],
+	allGlobalData: [],
+
+	// model
+	threadModel: null,
+	userModel: null,
+	dashboardModel: null,
+	globalModel: null,
+
+	// handle data
+	threadsData: null,
+	usersData: null,
+	dashBoardData: null,
+	globalData: null,
+
+	receivedTheFirstMessage: {}
+
+	// all will be set in bot/login/loadData.js
+};
+
+global.client = {
+	dirConfig,
+	dirConfigCommands,
+	dirAccount,
+	countDown: {},
+	cache: {},
+	database: {
+		creatingThreadData: [],
+		creatingUserData: [],
+		creatingDashBoardData: [],
+		creatingGlobalData: []
+	},
+	commandBanned: configCommands.commandBanned
+};
+
+const utils = require("./utils.js");
+global.utils = utils;
+const { colors } = utils;
+
+global.temp = {
+	createThreadData: [],
+	createUserData: [],
+	createThreadDataError: [], // Can't get info of groups with instagram members
+	filesOfGoogleDrive: {
+		arraybuffer: {},
+		stream: {},
+		fileNames: {}
+	},
+	contentScripts: {
+		cmds: {},
+		events: {}
+	}
+};
+
+// watch dirConfigCommands file and dirConfig
+const watchAndReloadConfig = (dir, type, prop, logName) => {
+	let lastModified = fs.statSync(dir).mtimeMs;
+	let isFirstModified = true;
+
+	fs.watch(dir, (eventType) => {
+		if (eventType === type) {
+			const oldConfig = global.GoatBot[prop];
+
+			// wait 200ms to reload config
+			setTimeout(() => {
+				try {
+					// if file change first time (when start bot, maybe you know it's called when start bot?) => not reload
+					if (isFirstModified) {
+						isFirstModified = false;
+						return;
+					}
+					// if file not change => not reload
+					if (lastModified === fs.statSync(dir).mtimeMs) {
+						return;
+					}
+					global.GoatBot[prop] = JSON.parse(fs.readFileSync(dir, 'utf-8'));
+					log.success(logName, `Reloaded ${dir.replace(process.cwd(), "")}`);
+				}
+				catch (err) {
+					log.warn(logName, `Can't reload ${dir.replace(process.cwd(), "")}`);
+					global.GoatBot[prop] = oldConfig;
+				}
+				finally {
+					lastModified = fs.statSync(dir).mtimeMs;
+				}
+			}, 200);
+		}
+	});
+};
+
+watchAndReloadConfig(dirConfigCommands, 'change', 'configCommands', 'CONFIG COMMANDS');
+watchAndReloadConfig(dirConfig, 'change', 'config', 'CONFIG');
+
+global.GoatBot.envGlobal = global.GoatBot.configCommands.envGlobal;
+global.GoatBot.envCommands = global.GoatBot.configCommands.envCommands;
+global.GoatBot.envEvents = global.GoatBot.configCommands.envEvents;
+
+// ———————————————— LOAD LANGUAGE ———————————————— //
+const getText = global.utils.getText;
+
+// ———————————————— AUTO RESTART ———————————————— //
+if (config.autoRestart) {
+	const time = config.autoRestart.time;
+	if (!isNaN(time) && time > 0) {
+		utils.log.info("AUTO RESTART", getText("Goat", "autoRestart1", utils.convertTime(time, true)));
+		setTimeout(() => {
+			utils.log.info("AUTO RESTART", "Restarting...");
+			process.exit(2);
+		}, time);
+	}
+	else if (typeof time == "string" && time.match(/^((((\d+,)+\d+|(\d+(\/|-|#)\d+)|\d+L?|\*(\/\d+)?|L(-\d+)?|\?|[A-Z]{3}(-[A-Z]{3})?) ?){5,7})$/gmi)) {
+		utils.log.info("AUTO RESTART", getText("Goat", "autoRestart2", time));
+		const cron = require("node-cron");
+		cron.schedule(time, () => {
+			utils.log.info("AUTO RESTART", "Restarting...");
+			process.exit(2);
+		});
+	}
+}
+
+(async () => {
+	// ———————————————————— LOGIN ———————————————————— //
+	require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
+})();
