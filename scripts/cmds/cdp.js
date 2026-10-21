@@ -1,7 +1,7 @@
 const axios = require("axios");
 const API_BASE = "https://hridoy-api.vercel.app";
 module.exports = {
-  config: { name: "kpopdp", aliases: ["k-pop"], version: "2.1", author: "HR ID OY", description: "Random K-Pop Matching Couple DP", category: "FUN", countDown: 5, role: 0, guide: { en: "{pn} or {pn} list" } },
+  config: { name: "cdp",version: "2.1", author: "HR ID OY", description: "Random K-Pop Matching Couple DP", category: "FUN", countDown: 5, role: 0, guide: { en: "{pn} or {pn} list" } },
   onStart: async function ({ api, event, args }) {
     const { threadID, messageID } = event;
     const config = (await axios.get(`${API_BASE}/api/links/cdp`)).data;
