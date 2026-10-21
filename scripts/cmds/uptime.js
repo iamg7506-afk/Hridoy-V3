@@ -234,9 +234,9 @@ function styledBody(d, themeLabel) {
   const lat = L < 150 ? "Excellent" : L < 400 ? "Good" : L < 800 ? "Slow" : "Poor";
   const latDot = L < 400 ? "🟢" : L < 800 ? "🟡" : "🔴";
   return [
-    "╭━━━━━━━━━━━━━━━━━╮",
-    "     ⚡ 𝙏𝙊𝙍𝙐 𝙐𝙋𝙏𝙄𝙈𝙀  ⚡",
-    "╰━━━━━━━━━━━━━━━━━╯",
+    "╭━━━━━━━━━━━━━━━━━━╮",
+    "      ⚡ 𝐓𝐎𝐑𝐔 𝐔𝐏𝐓𝐈𝐌𝐄 ⚡",
+    "╰━━━━━━━━━━━━━━━━━━╯",
     `💠 𝗛𝗲𝗮𝗹𝘁𝗵 ❯ ${d.score}/100 · Grade ${d.grade}`,
     `     ${bar(d.score)}  ${d.statusText}`,
     "",
