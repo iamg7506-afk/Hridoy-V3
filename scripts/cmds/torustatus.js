@@ -1,5 +1,5 @@
 module.exports = {
-	config: { name: "torustatus", aliases: ["botstatus", "pstatus"], version: "1.0", author: "toru-pro", countDown: 5, role: 0, description: "Stylish bot health panel", category: "system", guide: "{p}torustatus" },
+	config: { name: "torustatus", aliases: ["botstatus", "pstatus"], version: "1.0", author: "HR ID OY ", countDown: 5, role: 0, description: "Stylish bot health panel", category: "System", guide: "{p}torustatus" },
 	onStart: async function ({ message }) {
 		const G = global.GoatBot, c = G.config, u = process.uptime(), m = process.memoryUsage().rss / 1048576;
 		let two = c.twoIdMode && c.twoIdMode.enable ? "primary" : "off";
