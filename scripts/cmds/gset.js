@@ -1,8 +1,8 @@
 const gs = require("../../utils/groupSettings.js");
 module.exports = {
 	config: {
-		name: "gset", aliases: ["groupset", "gsettings"], version: "1.0", author: "toru-pro", countDown: 3, role: 0,
-		description: "Per-group settings: prefix, language, command on/off", category: "box chat",
+		name: "gset", aliases: ["groupset", "gsettings"], version: "1.0", author: "HR ID OY", countDown: 3, role: 0,
+		description: "Per-group settings: prefix, language, command on/off", category: "Group",
 		guide: "{p}gset                      show this group's settings\n{p}gset prefix <new|reset>\n{p}gset lang <en|bn|hi|tl|ar|vi>\n{p}gset off <command>      switch a command off here\n{p}gset on <command>       switch it back on\n{p}gset list               commands switched off"
 	},
 	onStart: async function ({ message, event, args, threadsData, role, prefix }) {
