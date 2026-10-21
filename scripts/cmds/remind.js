@@ -2,8 +2,8 @@ const R = require("../../utils/reminderService.js");
 const fmt = (ms, tz) => new Intl.DateTimeFormat("en-GB", { timeZone: tz, dateStyle: "medium", timeStyle: "short" }).format(new Date(ms));
 module.exports = {
 	config: {
-		name: "remind", aliases: ["reminder", "rmd"], version: "1.0", author: "toru-pro", countDown: 3, role: 0,
-		description: "Reminders in Banglish/English: 'kal 9tay remind koro ...'", category: "utility",
+		name: "remind", aliases: ["reminder", "rmd"], version: "1.0", author: "HR ID OY", countDown: 3, role: 0,
+		description: "Reminders in Banglish/English: 'kal 9tay remind koro ...'", category: "Utility",
 		guide: "{p}remind kal 9tay assignment dite hobe\n{p}remind 10 minute pore chai khabo\n{p}remind 25/12 8:30pm birthday wish\n{p}remind protidin 8am water kheyo\n{p}remind list | del <number> | clear"
 	},
 	onLoad: function ({ api, usersData }) { R.start({ api, usersData }); },
