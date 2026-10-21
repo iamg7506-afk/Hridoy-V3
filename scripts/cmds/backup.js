@@ -1,6 +1,6 @@
 const B = require("../../utils/autoBackup.js");
 module.exports = {
-	config: { name: "abackup", aliases: ["autobackup"], version: "1.0", author: "toru-pro", countDown: 10, role: 2, description: "Run / check the automatic backup (local, Mongo, Telegram, Drive)", category: "owner", guide: "{p}abackup now | status" },
+	config: { name: "backup", aliases: ["autobackup"], version: "1.0", author: "HR ID OY ", countDown: 10, role: 2, description: "Run / check the automatic backup (local, Mongo, Telegram, Drive)", category: "Admin", guide: "{p}abackup now | status" },
 	onStart: async function ({ message, args }) {
 		if ((args[0] || "status") === "now") { await message.reply("🗄 Backup shuru..."); const r = await B.run("command"); return message.reply(`${r.ok ? "✅" : "❌"} ${r.file}\n${r.info}`); }
 		const s = B.status(), c = global.GoatBot.config.autoBackup || {};
