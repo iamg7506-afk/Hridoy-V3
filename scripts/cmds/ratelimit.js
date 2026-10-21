@@ -2,7 +2,7 @@ const cs = require("../../utils/configStore.js");
 module.exports = {
 	config: {
 		name: "ratelimit", aliases: ["rl"], version: "1.0", author: "HR ID OY", countDown: 3, role: 2,
-		description: "View/edit per-command rate limits (max uses per time window, per user)", category: "Setting",
+		description: "View/edit per-command rate limits (max uses per time window, per user)", category: "System",
 		guide: "{p}ratelimit                    show\n{p}ratelimit on|off\n{p}ratelimit default <max> <seconds>\n{p}ratelimit <command> <max> <seconds>\n{p}ratelimit <command> remove"
 	},
 	onStart: async function ({ message, args }) {
