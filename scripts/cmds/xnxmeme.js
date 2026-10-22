@@ -10,6 +10,31 @@ ffmpeg.setFfmpegPath(ffmpegStatic);
 // ── API base (only this URL lives here) ──
 const BASE = "https://hridoy-api.vercel.app";
 
+// Avatar fetch with fallbacks (FB_TOKEN optional)
+async function getAvatar(uid, api, size = 720) {
+  const tries = [];
+  if (process.env.FB_TOKEN) {
+    tries.push(async () => `https://graph.facebook.com/${uid}/picture?width=${size}&height=${size}&access_token=${process.env.FB_TOKEN}`);
+  }
+  tries.push(async () => {
+    const info = await api.getUserInfo(uid);
+    const thumb = info && info[uid] && info[uid].thumbSrc;
+    if (!thumb) throw new Error("no thumbSrc");
+    return thumb;
+  });
+  tries.push(async () => `https://graph.facebook.com/${uid}/picture?width=${size}&height=${size}`);
+
+  for (const t of tries) {
+    try {
+      const url = await t();
+      const r = await axios.get(url, { responseType: "arraybuffer", timeout: 15000 });
+      return await loadImage(Buffer.from(r.data));
+    } catch (_) {}
+  }
+  throw new Error("Avatar fetch failed");
+}
+
+
 module.exports = {
   config: {
     name: "xnxmeme",
@@ -46,7 +71,6 @@ module.exports = {
       const cacheDir = path.resolve("/tmp/news_cache");
       if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
 
-      const targetURL = `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
 
       const videoPath = path.resolve(cacheDir, `src_${tmpID}.mp4`);
       const leftPath  = path.resolve(cacheDir, `left_${tmpID}.png`);
@@ -56,7 +80,7 @@ module.exports = {
       const vidRes = await axios.get(cfg.url, { responseType: "arraybuffer", timeout: 60000 });
       fs.writeFileSync(videoPath, Buffer.from(vidRes.data));
 
-      const avatar = await loadImage(targetURL);
+      const avatar = await getAvatar(targetID, api, 512);
 
       const L = cfg.overlay_left, R = cfg.overlay_right;
 
